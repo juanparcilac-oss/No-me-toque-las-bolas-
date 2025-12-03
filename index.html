@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PC GAMER Store</title>
+<style>
+  :root {
+    --morado: #6a0dad;
+    --morado-oscuro: #4b067f;
+    --blanco: #fff;
+    --gris-claro: #f4f4f9;
+  }
+
+  body {
+    font-family: system-ui;
+    background-color: var(--gris-claro);
+    color: #222;
+    padding: 20px;
+    text-align: center;
+  }
+
+  h1 {
+    color: var(--morado-oscuro);
+    font-size: 2.2rem;
+    margin-bottom: 25px;
+  }
+
+  /* PRODUCTOS */
+  #productos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .producto {
+    border: 2px solid var(--morado);
+    background: var(--blanco);
+    border-radius: 10px;
+    padding: 10px;
+    width: 230px;
+    transition: 0.2s;
+  }
+
+  .producto:hover {
+    transform: scale(1.03);
+    border-color: var(--morado-oscuro);
+  }
+
+  .producto img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+
+  .producto button {
+    background-color: var(--morado);
+    border: none;
+    color: white;
+    padding: 8px;
+    width: 100%;
+    margin-top: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .producto button:hover {
+    background-color: var(--morado-oscuro);
+  }
+
+  /* CARRITO */
+  .carrito {
+    margin-top: 40px;
+    padding: 20px;
+    background: var(--blanco);
+    border-radius: 10px;
+    width: 350px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 2px solid var(--morado);
+    text-align: left;
+  }
+
+  .carrito h2 {
+    margin-top: 0;
+    color: var(--morado-oscuro);
+  }
+
+  #lista-carrito {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .vaciar {
+    width: 100%;
+    background-color: #b30000 !important;
+  }
+
+  .finalizar {
+    background-color: var(--morado);
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .finalizar:hover {
+    background-color: var(--morado-oscuro);
+  }
+
+</style>
+</head>
+<body>
+
+<h1>🍽️ PC GAMER</h1>
+
+<div id="productos"></div>
+
+<div class="carrito">
+  <h2>🧾 Carrito de Compras (0)</h2>
+  <ul id="lista-carrito"></ul>
+
+  <p><strong>Total: $<span id="total">0.00</span></strong></p>
+
+  <button class="vaciar" id="btn-vaciar">🧼 Vaciar Carrito</button>
+  <button class="finalizar" id="btn-finalizar">✅ Finalizar Compra</button>
+</div>
+
+<script>
+/* -------------------------
+   DATOS DE PRODUCTOS
+--------------------------*/
+const productos = [
+  {
+    id: 1,
+    nombre: "PC GAMER",
+    precio: 25.00,
+    imagen: "https://exitocol.vtexassets.com/arquivos/ids/29364022/computador-pc-torre-gamer-power-l38-amd-ryzen-7-5700g-ssd-128-hdd-1tb-ram-16gb-led-22-pulgadas.jpg?v=638890760738330000"
+  },
+  {
+    id: 2,
+    nombre: "PC GAMER",
+    precio: 18.00,
+    imagen: "https://www.pcware.com.co/wp-content/uploads/2025/04/DYN_01.jpg"
+  },
+  {
+    id: 3,
+    nombre: "PC GAMER",
+    precio: 30.00,
+    imagen: "https://www.mipcparquecentral.com/cdn/shop/files/Combo_Gamer_Ryzen_5_5600g_144_hz.jpg?v=1761258911"
+  },
+  {
+    id: 4,
+    nombre: "Croissant Francés",
+    precio: 18.00,
+    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOPKz7kWSCBLVSnGqLytYAgDi98aHA1HzxAA&s"
+  },
+  {
+    id: 5,
+    nombre: "PC GAMER",
+    precio: 22.00,
+    imagen: "https://tecnovortex.com/wp-content/uploads/2024/12/pc-gamer-escritorio.jpg"
+  }
+];
+
+/* -------------------------
+   VARIABLES
+--------------------------*/
+let carrito = [];
+
+const contenedorProductos = document.getElementById("productos");
+const listaCarrito = document.getElementById("lista-carrito");
+const totalCarrito = document.getElementById("total");
+const btnVaciar = document.getElementById("btn-vaciar");
+const btnFinalizar = document.getElementById("btn-finalizar");
+
+/* -------------------------
+   PINTAR PRODUCTOS
+--------------------------*/
+function mostrarProductos() {
+  contenedorProductos.innerHTML = "";
+
+  productos.forEach(prod => {
+    const card = document.createElement("div");
+    card.className = "producto";
+
+    card.innerHTML = `
+      <img src="${prod.imagen}" alt="${prod.nombre}">
+      <h3>${prod.nombre}</h3>
+      <p>Precio: $${prod.precio.toFixed(2)}</p>
+      <button data-id="${prod.id}" class="btn-agregar">Agregar al carrito</button>
+    `;
+
+    contenedorProductos.appendChild(card);
+  });
+}
+
+/* -------------------------
+   AGREGAR AL CARRITO
+--------------------------*/
+function agregarAlCarrito(id) {
+  const existente = carrito.find(item => item.id === id);
+
+  if (existente) {
+    existente.cantidad++;
+  } else {
+    const producto = productos.find(p => p.id === id);
+    carrito.push({ ...producto, cantidad: 1 });
+  }
+
+  actualizarCarrito();
+}
+
+/* -------------------------
+   ACTUALIZAR CARRITO
+--------------------------*/
+function actualizarCarrito() {
+  listaCarrito.innerHTML = "";
+  let total = 0;
+  let cantidadProductos = 0;
+
+  carrito.forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = `${item.nombre} x${item.cantidad} - $${(item.precio * item.cantidad).toFixed(2)}`;
+    listaCarrito.appendChild(li);
+
+    total += item.precio * item.cantidad;
+    cantidadProductos += item.cantidad;
+  });
+
+  totalCarrito.textContent = total.toFixed(2);
+
+  document.querySelector(".carrito h2").textContent =
+    `🧾 Carrito de Compras (${cantidadProductos})`;
+}
+
+/* -------------------------
+   VACIAR CARRITO
+--------------------------*/
+btnVaciar.addEventListener("click", () => {
+  if (confirm("¿Deseas vaciar el carrito?")) {
+    carrito = [];
+    actualizarCarrito();
+  }
+});
+
+/* -------------------------
+   FINALIZAR COMPRA
+--------------------------*/
+btnFinalizar.addEventListener("click", () => {
+  if (carrito.length === 0) {
+    alert("Tu carrito está vacío.");
+    return;
+  }
+  alert("🎉 ¡Gracias por tu compra!");
+  carrito = [];
+  actualizarCarrito();
+});
+
+/* -------------------------
+   EVENTOS DELEGADOS
+--------------------------*/
+document.addEventListener("click", e => {
+  if (e.target.classList.contains("btn-agregar")) {
+    const id = parseInt(e.target.dataset.id);
+    agregarAlCarrito(id);
+  }
+});
+
+/* -------------------------
+   INICIO
+--------------------------*/
+mostrarProductos();
+</script>
+
+</body>
+</html>
